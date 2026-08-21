@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "monkey-fishing-mod",
+	"version": "${version}",
+	"name": "Monkey fishing mod",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/monkey-fishing-mod/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"monkey.fishing.MonkeyFishingMod"
+		],
+		"client": [
+			"monkey.fishing.client.MonkeyFishingModClient"
+		]
+	},
+	"mixins": [
+		"monkey-fishing-mod.mixins.json",
+		{
+			"config": "monkey-fishing-mod.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
