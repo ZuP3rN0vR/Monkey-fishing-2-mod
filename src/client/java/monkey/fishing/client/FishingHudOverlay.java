@@ -5,5 +5,6 @@ public final class FishingHudOverlay {
 	}
 
 	public static void register() {
+		// HUD overlay registration will be added back once it targets the current client API.
 	}
 }
