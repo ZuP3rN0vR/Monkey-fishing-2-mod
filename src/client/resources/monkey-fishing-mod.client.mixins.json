@@ -3,7 +3,8 @@
 	"package": "monkey.fishing.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"ExampleClientMixin"
+		"ExampleClientMixin",
+		"FishingHookBitingAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
