@@ -8,9 +8,6 @@ import net.minecraft.world.entity.projectile.FishingHook;
  * identically on both logical sides), so no extra networking is required to keep them in sync.
  */
 public final class FishingMinigame {
-	/** Chance to reroll a non-treasure catch into a treasure catch when reeled in on green. */
-	public static final float REROLL_CHANCE_ON_GREEN = 0.30f;
-
 	private static final float GREEN_ZONE_LENGTH = 0.18f;
 
 	private FishingMinigame() {

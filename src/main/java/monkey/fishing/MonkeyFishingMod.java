@@ -1,5 +1,7 @@
 package monkey.fishing;
 
+import monkey.fishing.command.MonkeyFishingCommands;
+import monkey.fishing.config.ConfigManager;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.Identifier;
@@ -22,6 +24,8 @@ public class MonkeyFishingMod implements ModInitializer {
 		// Proceed with mild caution.
 
 		LOGGER.info("Hello Fabric world!");
+		ConfigManager.load();
+		MonkeyFishingCommands.register();
 	}
 
 	public static Identifier id(String path) {

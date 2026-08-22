@@ -1,7 +1,12 @@
 package monkey.fishing.mixin;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.List;
 import java.util.Set;
+import monkey.fishing.MonkeyFishingMod;
+import monkey.fishing.config.ConfigManager;
+import monkey.fishing.config.CustomItemParser;
+import monkey.fishing.config.MonkeyFishingConfig;
 import monkey.fishing.minigame.FishingMinigame;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.Item;
@@ -26,13 +31,45 @@ public class FishingHookMixin {
 		ObjectArrayList<ItemStack> items = lootTable.getRandomItems(params);
 		FishingHook hook = (FishingHook) (Object) this;
 
+		float chance = ConfigManager.CONFIG.treasureChancePercent / 100f;
 		boolean alreadyTreasure = items.stream().anyMatch(stack -> TREASURE_ITEMS.contains(stack.getItem()));
-		if (!alreadyTreasure && FishingMinigame.isBeadInGreenZone(hook)
-				&& hook.getRandom().nextFloat() < FishingMinigame.REROLL_CHANCE_ON_GREEN) {
+		if (!alreadyTreasure && FishingMinigame.isBeadInGreenZone(hook) && hook.getRandom().nextFloat() < chance) {
+			ItemStack custom = monkeyfishing$rollCustomItem(hook);
+			if (custom != null) {
+				ObjectArrayList<ItemStack> result = new ObjectArrayList<>();
+				result.add(custom);
+				return result;
+			}
+
 			LootTable treasureTable = params.getLevel().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING_TREASURE);
 			return treasureTable.getRandomItems(params);
 		}
 
 		return items;
 	}
+
+	/** Picks a weighted-random custom item from the config, or null if none configured / all fail to parse. */
+	private static ItemStack monkeyfishing$rollCustomItem(FishingHook hook) {
+		List<MonkeyFishingConfig.CustomLootEntry> entries = ConfigManager.CONFIG.customItems;
+		if (entries.isEmpty()) {
+			return null;
+		}
+
+		int totalWeight = entries.stream().mapToInt(e -> Math.max(1, e.weight)).sum();
+		int roll = hook.getRandom().nextInt(totalWeight);
+		int cumulative = 0;
+		for (MonkeyFishingConfig.CustomLootEntry entry : entries) {
+			cumulative += Math.max(1, entry.weight);
+			if (roll < cumulative) {
+				try {
+					return CustomItemParser.parse(entry.itemSpec, hook.level().getServer().reloadableRegistries().lookup());
+				} catch (Exception e) {
+					MonkeyFishingMod.LOGGER.warn("Failed to parse custom treasure item spec '{}': {}", entry.itemSpec, e.getMessage());
+					return null;
+				}
+			}
+		}
+		return null;
+	}
 }
+
