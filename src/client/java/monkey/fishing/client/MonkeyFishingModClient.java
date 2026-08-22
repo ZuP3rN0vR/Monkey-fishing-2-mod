@@ -6,5 +6,6 @@ public class MonkeyFishingModClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		FishingHudOverlay.register();
+		ChestGuiClientHandler.register();
 	}
 }

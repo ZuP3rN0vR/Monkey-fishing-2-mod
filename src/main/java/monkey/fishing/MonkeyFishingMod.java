@@ -2,8 +2,8 @@ package monkey.fishing;
 
 import monkey.fishing.command.MonkeyFishingCommands;
 import monkey.fishing.config.ConfigManager;
+import monkey.fishing.network.ChestGuiPacket;
 import net.fabricmc.api.ModInitializer;
-
 import net.minecraft.resources.Identifier;
 
 import org.slf4j.Logger;
@@ -26,8 +26,9 @@ public class MonkeyFishingMod implements ModInitializer {
 		LOGGER.info("Hello Fabric world!");
 		ConfigManager.load();
 		MonkeyFishingCommands.register();
+		ChestGuiPacket.registerPayloadType();
 	}
-
+	
 	public static Identifier id(String path) {
 		return Identifier.fromNamespaceAndPath(MOD_ID, path);
 	}
