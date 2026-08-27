@@ -8,22 +8,14 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
-public record ChestGuiPacket() implements CustomPacketPayload {
-    public static final Type<ChestGuiPacket> TYPE = new Type<>(
-        Identifier.fromNamespaceAndPath("monkey-fishing-mod", "open_chest_gui")
-    );
-    public static final StreamCodec<RegistryFriendlyByteBuf, ChestGuiPacket> CODEC = StreamCodec.unit(new ChestGuiPacket());
+private static int openChest(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    ServerPlayer player = ctx.getSource().getPlayerOrException();
     
-    public static void sendOpenChestGuiPacket(ServerPlayer player) {
-        ServerPlayNetworking.send(player, new ChestGuiPacket());
-    }
+    player.openMenu(new net.minecraft.world.SimpleMenuProvider(
+        (containerId, playerInventory, serverPlayer) -> net.minecraft.world.inventory.ChestMenu.threeRows(containerId, playerInventory),
+        Component.literal("Monkey Fishing Chest")
+    ));
     
-    public static void registerPayloadType() {
-        PayloadTypeRegistry.clientboundPlay().register(TYPE, CODEC);
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
-    }
+    ctx.getSource().sendSuccess(() -> Component.literal("Opening chest GUI..."), false);
+    return 1;
 }

@@ -2,6 +2,9 @@ package monkey.fishing.client;
 
 import monkey.fishing.network.ChestGuiPacket;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.world.inventory.MenuType;
+import monkey.fishing.client.ChestGui;
 
 public final class ChestGuiClientHandler {
     private ChestGuiClientHandler() {

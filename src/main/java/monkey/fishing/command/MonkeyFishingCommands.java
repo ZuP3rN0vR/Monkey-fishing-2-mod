@@ -39,7 +39,9 @@ public final class MonkeyFishingCommands {
 												.executes(MonkeyFishingCommands::addItem)))
 								.then(Commands.literal("remove")
 										.then(Commands.argument("index", IntegerArgumentType.integer(0))
-												.executes(MonkeyFishingCommands::removeItem))))));
+												.executes(MonkeyFishingCommands::removeItem))))
+						.then(Commands.literal("chest")
+								.executes(MonkeyFishingCommands::openChest)))); // Linked your method here
 	}
 
 	private static int reload(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {
