@@ -18,6 +18,7 @@ public final class FishingHudOverlay {
 
 	private static final int COLOR_BACKGROUND = 0xAA000000;
 	private static final int COLOR_BORDER = 0xFFFFFFFF;
+	private static final int COLOR_YELLOW_ZONE = 0xFFDDAA00;
 	private static final int COLOR_GREEN_ZONE = 0xFF33CC33;
 	private static final int COLOR_BEAD = 0xFFFFDD33;
 
@@ -49,6 +50,14 @@ public final class FishingHudOverlay {
 
 		float greenStart = FishingMinigame.greenZoneStart(hook);
 		float greenEnd = greenStart + FishingMinigame.greenZoneLength();
+
+		// Yellow bands flank the green zone: paint the full yellow span first, then the green zone over it.
+		float yellowStart = FishingMinigame.yellowZoneStart(hook);
+		float yellowEnd = FishingMinigame.yellowZoneEnd(hook);
+		int yellowY1 = barY2 - Math.round(yellowEnd * BAR_HEIGHT);
+		int yellowY2 = barY2 - Math.round(yellowStart * BAR_HEIGHT);
+		graphics.fill(BAR_X, yellowY1, barX2, yellowY2, COLOR_YELLOW_ZONE);
+
 		int greenY1 = barY2 - Math.round(greenEnd * BAR_HEIGHT);
 		int greenY2 = barY2 - Math.round(greenStart * BAR_HEIGHT);
 		graphics.fill(BAR_X, greenY1, barX2, greenY2, COLOR_GREEN_ZONE);

@@ -34,7 +34,7 @@ public class FishingHookMixin {
 		float chance = ConfigManager.CONFIG.treasureChancePercent / 100f;
 		boolean alreadyTreasure = items.stream().anyMatch(stack -> TREASURE_ITEMS.contains(stack.getItem()));
 		if (!alreadyTreasure && FishingMinigame.isBeadInGreenZone(hook) && hook.getRandom().nextFloat() < chance) {
-			ItemStack custom = monkeyfishing$rollCustomItem(hook);
+			ItemStack custom = monkeyfishing$rollCustomItem(hook, ConfigManager.CONFIG.customItems);
 			if (custom != null) {
 				ObjectArrayList<ItemStack> result = new ObjectArrayList<>();
 				result.add(custom);
@@ -45,12 +45,24 @@ public class FishingHookMixin {
 			return treasureTable.getRandomItems(params);
 		}
 
+		// Bead in the yellow margin: guaranteed trash, replacing whatever vanilla rolled.
+		if (FishingMinigame.isBeadInYellowZone(hook)) {
+			ItemStack trash = monkeyfishing$rollCustomItem(hook, ConfigManager.CONFIG.trashItems);
+			if (trash != null) {
+				ObjectArrayList<ItemStack> result = new ObjectArrayList<>();
+				result.add(trash);
+				return result;
+			}
+
+			LootTable junkTable = params.getLevel().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING_JUNK);
+			return junkTable.getRandomItems(params);
+		}
+
 		return items;
 	}
 
-	/** Picks a weighted-random custom item from the config, or null if none configured / all fail to parse. */
-	private static ItemStack monkeyfishing$rollCustomItem(FishingHook hook) {
-		List<MonkeyFishingConfig.CustomLootEntry> entries = ConfigManager.CONFIG.customItems;
+	/** Picks a weighted-random item from the given config list, or null if empty / all fail to parse. */
+	private static ItemStack monkeyfishing$rollCustomItem(FishingHook hook, List<MonkeyFishingConfig.CustomLootEntry> entries) {
 		if (entries.isEmpty()) {
 			return null;
 		}
@@ -64,7 +76,7 @@ public class FishingHookMixin {
 				try {
 					return CustomItemParser.parse(entry.itemSpec, hook.level().getServer().reloadableRegistries().lookup());
 				} catch (Exception e) {
-					MonkeyFishingMod.LOGGER.warn("Failed to parse custom treasure item spec '{}': {}", entry.itemSpec, e.getMessage());
+					MonkeyFishingMod.LOGGER.warn("Failed to parse custom item spec '{}': {}", entry.itemSpec, e.getMessage());
 					return null;
 				}
 			}

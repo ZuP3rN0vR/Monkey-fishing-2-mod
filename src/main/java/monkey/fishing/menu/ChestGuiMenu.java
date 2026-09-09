@@ -20,7 +20,7 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
-/** Real, server-synced chest menu backing the Monkey Fishing chest GUI (owns its own MenuType so it isn't drawn by vanilla's chest screen). */
+/** Real, server-synced chest menu backing the Monkey Fishing chest GUIs (owns its own MenuType so it isn't drawn by vanilla's chest screen). */
 public class ChestGuiMenu extends ChestMenu {
     public static final MenuType<ChestGuiMenu> TYPE = Registry.register(
         BuiltInRegistries.MENU, MonkeyFishingMod.id("chest_gui"),
@@ -29,28 +29,48 @@ public class ChestGuiMenu extends ChestMenu {
 
     private static final int SLOT_COUNT = 27;
 
+    /** Which config list this GUI edits. Persistence only runs server-side, so the client default is harmless. */
+    public enum Target {
+        TREASURE, TRASH
+    }
+
     private final Container container;
+    private final Target target;
 
     public ChestGuiMenu(int syncId, Inventory playerInventory) {
-        this(syncId, playerInventory, new SimpleContainer(SLOT_COUNT));
+        this(syncId, playerInventory, new SimpleContainer(SLOT_COUNT), Target.TREASURE);
     }
 
     public ChestGuiMenu(int syncId, Inventory playerInventory, Container container) {
-        super(TYPE, syncId, playerInventory, container, 3);
-        this.container = container;
+        this(syncId, playerInventory, container, Target.TREASURE);
     }
 
-    /** Builds a fresh backing container from the configured custom loot items. */
+    public ChestGuiMenu(int syncId, Inventory playerInventory, Container container, Target target) {
+        super(TYPE, syncId, playerInventory, container, 3);
+        this.container = container;
+        this.target = target;
+    }
+
+    private static List<MonkeyFishingConfig.CustomLootEntry> entriesFor(Target target) {
+        return target == Target.TRASH ? ConfigManager.CONFIG.trashItems : ConfigManager.CONFIG.customItems;
+    }
+
+    /** Builds a fresh backing container from the configured items for the given target. */
     public static Container buildContainer(HolderLookup.Provider registries) {
+        return buildContainer(registries, Target.TREASURE);
+    }
+
+    /** Builds a fresh backing container from the configured items for the given target. */
+    public static Container buildContainer(HolderLookup.Provider registries, Target target) {
         SimpleContainer container = new SimpleContainer(SLOT_COUNT);
-        var items = ConfigManager.CONFIG.customItems;
+        var items = entriesFor(target);
         for (int i = 0; i < items.size() && i < container.getContainerSize(); i++) {
             MonkeyFishingConfig.CustomLootEntry entry = items.get(i);
             try {
                 ItemStack stack = CustomItemParser.parse(entry.itemSpec, registries);
                 container.setItem(i, stack);
             } catch (CommandSyntaxException e) {
-                MonkeyFishingMod.LOGGER.warn("Failed to parse custom treasure item spec '{}': {}", entry.itemSpec, e.getMessage());
+                MonkeyFishingMod.LOGGER.warn("Failed to parse custom {} item spec '{}': {}", target.name().toLowerCase(), entry.itemSpec, e.getMessage());
             }
         }
         return container;
@@ -59,7 +79,7 @@ public class ChestGuiMenu extends ChestMenu {
     @Override
     public void removed(Player player) {
         super.removed(player);
-        // Persist whatever ended up in the top slots back into the treasure pool config.
+        // Persist whatever ended up in the top slots back into the matching loot pool config.
         if (player instanceof ServerPlayer) {
             List<MonkeyFishingConfig.CustomLootEntry> updated = new ArrayList<>();
             HolderLookup.Provider registries = player.level().registryAccess();
@@ -69,7 +89,11 @@ public class ChestGuiMenu extends ChestMenu {
                     updated.add(new MonkeyFishingConfig.CustomLootEntry(CustomItemParser.toSpec(stack, registries)));
                 }
             }
-            ConfigManager.CONFIG.customItems = updated;
+            if (this.target == Target.TRASH) {
+                ConfigManager.CONFIG.trashItems = updated;
+            } else {
+                ConfigManager.CONFIG.customItems = updated;
+            }
             ConfigManager.save();
         }
     }

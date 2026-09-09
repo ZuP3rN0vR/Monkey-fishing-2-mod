@@ -43,7 +43,9 @@ public final class MonkeyFishingCommands {
 										.then(Commands.argument("index", IntegerArgumentType.integer(0))
 												.executes(MonkeyFishingCommands::removeItem))))
 						.then(Commands.literal("chest")
-								.executes(MonkeyFishingCommands::openChest)))); // Linked your method here
+								.executes(MonkeyFishingCommands::openChest))
+						.then(Commands.literal("trashchest")
+								.executes(MonkeyFishingCommands::openTrashChest))));
 	}
 
 	private static int reload(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {
@@ -108,10 +110,18 @@ public final class MonkeyFishingCommands {
 	}
 
 	private static int openChest(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		return openChestGui(ctx, ChestGuiMenu.Target.TREASURE, Component.literal("Monkey Fishing"));
+	}
+
+	private static int openTrashChest(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		return openChestGui(ctx, ChestGuiMenu.Target.TRASH, Component.literal("Monkey Fishing Trash"));
+	}
+
+	private static int openChestGui(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx, ChestGuiMenu.Target target, Component title) throws CommandSyntaxException {
 		ServerPlayer player = (ServerPlayer) ctx.getSource().getPlayerOrException();
-		Container container = ChestGuiMenu.buildContainer(ctx.getSource().getServer().reloadableRegistries().lookup());
+		Container container = ChestGuiMenu.buildContainer(ctx.getSource().getServer().reloadableRegistries().lookup(), target);
 		player.openMenu(new SimpleMenuProvider(
-				(syncId, inv, p) -> new ChestGuiMenu(syncId, inv, container), Component.literal("Monkey Fishing")));
+				(syncId, inv, p) -> new ChestGuiMenu(syncId, inv, container, target), title));
 		ctx.getSource().sendSuccess(() -> Component.literal("Opening chest GUI..."), false);
 		return 1;
 	}

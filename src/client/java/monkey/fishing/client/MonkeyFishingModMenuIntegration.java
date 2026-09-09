@@ -40,12 +40,39 @@ public final class MonkeyFishingModMenuIntegration implements com.terraformersmc
 				.setSaveConsumer(value -> ConfigManager.CONFIG.treasureChancePercent = value)
 				.build());
 
+		general.addEntry(entryBuilder.startIntSlider(
+						Component.literal("Green zone size (%)"), config.greenZoneSizePercent, 5, 50)
+				.setDefaultValue(18)
+				.setSaveConsumer(value -> ConfigManager.CONFIG.greenZoneSizePercent = value)
+				.build());
+
+		general.addEntry(entryBuilder.startIntSlider(
+						Component.literal("Yellow zone size per side (%)"), config.yellowZoneSizePercent, 0, 25)
+				.setDefaultValue(8)
+				.setSaveConsumer(value -> ConfigManager.CONFIG.yellowZoneSizePercent = value)
+				.build());
+
 		List<String> currentSpecs = config.customItems.stream().map(e -> e.itemSpec).toList();
 		general.addEntry(entryBuilder.startStrList(
 						Component.literal("Custom treasure items (/give-style item spec per line)"), currentSpecs)
 				.setDefaultValue(new ArrayList<>())
 				.setSaveConsumer(specs -> {
 					List<MonkeyFishingConfig.CustomLootEntry> liveItems = ConfigManager.CONFIG.customItems;
+					liveItems.clear();
+					for (String spec : specs) {
+						if (spec != null && !spec.isBlank()) {
+							liveItems.add(new MonkeyFishingConfig.CustomLootEntry(spec.trim()));
+						}
+					}
+				})
+				.build());
+
+		List<String> currentTrashSpecs = config.trashItems.stream().map(e -> e.itemSpec).toList();
+		general.addEntry(entryBuilder.startStrList(
+						Component.literal("Custom trash items (/give-style item spec per line)"), currentTrashSpecs)
+				.setDefaultValue(new ArrayList<>())
+				.setSaveConsumer(specs -> {
+					List<MonkeyFishingConfig.CustomLootEntry> liveItems = ConfigManager.CONFIG.trashItems;
 					liveItems.clear();
 					for (String spec : specs) {
 						if (spec != null && !spec.isBlank()) {
