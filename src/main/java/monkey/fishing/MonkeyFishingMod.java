@@ -2,7 +2,7 @@ package monkey.fishing;
 
 import monkey.fishing.command.MonkeyFishingCommands;
 import monkey.fishing.config.ConfigManager;
-import monkey.fishing.network.ChestGuiPacket;
+import monkey.fishing.menu.ChestGuiMenu;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
 
@@ -26,7 +26,7 @@ public class MonkeyFishingMod implements ModInitializer {
 		LOGGER.info("Hello Fabric world!");
 		ConfigManager.load();
 		MonkeyFishingCommands.register();
-		ChestGuiPacket.registerPayloadType();
+		var ignored = ChestGuiMenu.TYPE; // force MenuType registration
 	}
 	
 	public static Identifier id(String path) {

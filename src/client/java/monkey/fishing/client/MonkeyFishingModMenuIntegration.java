@@ -35,7 +35,9 @@ public final class MonkeyFishingModMenuIntegration implements com.terraformersmc
 		general.addEntry(entryBuilder.startIntSlider(
 						Component.literal("Treasure chance on green (%)"), config.treasureChancePercent, 1, 100)
 				.setDefaultValue(30)
-				.setSaveConsumer(value -> config.treasureChancePercent = value)
+				// Write through the live field, not the snapshot above, so a /monkeyfishing reload
+				// while this screen is open can't cause the save to land on a discarded config object.
+				.setSaveConsumer(value -> ConfigManager.CONFIG.treasureChancePercent = value)
 				.build());
 
 		List<String> currentSpecs = config.customItems.stream().map(e -> e.itemSpec).toList();
@@ -43,10 +45,11 @@ public final class MonkeyFishingModMenuIntegration implements com.terraformersmc
 						Component.literal("Custom treasure items (/give-style item spec per line)"), currentSpecs)
 				.setDefaultValue(new ArrayList<>())
 				.setSaveConsumer(specs -> {
-					config.customItems.clear();
+					List<MonkeyFishingConfig.CustomLootEntry> liveItems = ConfigManager.CONFIG.customItems;
+					liveItems.clear();
 					for (String spec : specs) {
 						if (spec != null && !spec.isBlank()) {
-							config.customItems.add(new MonkeyFishingConfig.CustomLootEntry(spec.trim()));
+							liveItems.add(new MonkeyFishingConfig.CustomLootEntry(spec.trim()));
 						}
 					}
 				})

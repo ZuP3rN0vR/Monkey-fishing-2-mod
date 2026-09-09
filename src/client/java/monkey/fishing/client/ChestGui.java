@@ -7,26 +7,21 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ChestMenu;
-import monkey.fishing.config.ConfigManager;
-import monkey.fishing.config.MonkeyFishingConfig;
-import java.util.List;
+import monkey.fishing.menu.ChestGuiMenu;
 
 
 @Environment(EnvType.CLIENT)
-public class ChestGui extends AbstractContainerScreen<ChestMenu> {
+public class ChestGui extends AbstractContainerScreen<ChestGuiMenu> {
+    // Placeholder background reusing vanilla's generic container texture until custom art is added.
     private static final Identifier CHEST_GUI_TEXTURE = Identifier.fromNamespaceAndPath(
-        "monkey-fishing-mod", "textures/gui/chest.png"
+        "minecraft", "textures/gui/container/generic_54.png"
     );
     private static final int CONTAINER_WIDTH = 176;
     private static final int CONTAINER_HEIGHT = 166;
 
-    private final List<MonkeyFishingConfig.CustomLootEntry> lootItems;
-
-    public ChestGui(ChestMenu menu, Inventory playerInventory, Component title) {
+    public ChestGui(ChestGuiMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, CONTAINER_WIDTH, CONTAINER_HEIGHT);
         this.inventoryLabelY = this.imageHeight - 94;
-        this.lootItems = ConfigManager.CONFIG.customItems;
     }
 
     @Override

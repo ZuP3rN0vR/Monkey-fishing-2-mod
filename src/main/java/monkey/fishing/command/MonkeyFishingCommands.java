@@ -8,12 +8,14 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import monkey.fishing.config.ConfigManager;
 import monkey.fishing.config.CustomItemParser;
 import monkey.fishing.config.MonkeyFishingConfig;
-import monkey.fishing.network.ChestGuiPacket;
+import monkey.fishing.menu.ChestGuiMenu;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 
 /** Server commands for editing the treasure config; gated behind the monkeyfishing.config.edit permission. */
@@ -107,7 +109,9 @@ public final class MonkeyFishingCommands {
 
 	private static int openChest(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 		ServerPlayer player = (ServerPlayer) ctx.getSource().getPlayerOrException();
-		ChestGuiPacket.sendOpenChestGuiPacket(player);
+		Container container = ChestGuiMenu.buildContainer(ctx.getSource().getServer().reloadableRegistries().lookup());
+		player.openMenu(new SimpleMenuProvider(
+				(syncId, inv, p) -> new ChestGuiMenu(syncId, inv, container), Component.literal("Monkey Fishing")));
 		ctx.getSource().sendSuccess(() -> Component.literal("Opening chest GUI..."), false);
 		return 1;
 	}
