@@ -14,8 +14,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 
 /** Server commands for editing the treasure config; gated behind the monkeyfishing.config.edit permission. */
@@ -29,6 +27,7 @@ public final class MonkeyFishingCommands {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(
 				Commands.literal("monkeyfishing")
 						.requires(Permissions.require(PERMISSION, 4))
+						.executes(ctx -> openHub(ctx))
 						.then(Commands.literal("reload").executes(MonkeyFishingCommands::reload))
 						.then(Commands.literal("treasurechance")
 								.then(Commands.literal("get").executes(MonkeyFishingCommands::getChance))
@@ -43,7 +42,11 @@ public final class MonkeyFishingCommands {
 										.then(Commands.argument("index", IntegerArgumentType.integer(0))
 												.executes(MonkeyFishingCommands::removeItem))))
 						.then(Commands.literal("chest")
-								.executes(MonkeyFishingCommands::openChest))
+								.executes(MonkeyFishingCommands::openHub))
+						.then(Commands.literal("settings")
+								.executes(MonkeyFishingCommands::openSettings))
+						.then(Commands.literal("rewards")
+								.executes(MonkeyFishingCommands::openRewards))
 						.then(Commands.literal("trashchest")
 								.executes(MonkeyFishingCommands::openTrashChest))));
 	}
@@ -109,20 +112,26 @@ public final class MonkeyFishingCommands {
 		return 1;
 	}
 
-	private static int openChest(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-		return openChestGui(ctx, ChestGuiMenu.Target.TREASURE, Component.literal("Monkey Fishing"));
+	private static int openHub(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		return openMenu(ctx, ChestGuiMenu.Mode.HUB);
+	}
+
+	private static int openSettings(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		return openMenu(ctx, ChestGuiMenu.Mode.SETTINGS);
+	}
+
+	private static int openRewards(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		return openMenu(ctx, ChestGuiMenu.Mode.REWARDS);
 	}
 
 	private static int openTrashChest(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-		return openChestGui(ctx, ChestGuiMenu.Target.TRASH, Component.literal("Monkey Fishing Trash"));
+		return openMenu(ctx, ChestGuiMenu.Mode.TRASH);
 	}
 
-	private static int openChestGui(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx, ChestGuiMenu.Target target, Component title) throws CommandSyntaxException {
+	private static int openMenu(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx, ChestGuiMenu.Mode mode) throws CommandSyntaxException {
 		ServerPlayer player = (ServerPlayer) ctx.getSource().getPlayerOrException();
-		Container container = ChestGuiMenu.buildContainer(ctx.getSource().getServer().reloadableRegistries().lookup(), target);
-		player.openMenu(new SimpleMenuProvider(
-				(syncId, inv, p) -> new ChestGuiMenu(syncId, inv, container, target), title));
-		ctx.getSource().sendSuccess(() -> Component.literal("Opening chest GUI..."), false);
+		ChestGuiMenu.open(player, mode);
+		ctx.getSource().sendSuccess(() -> Component.literal("Opening Monkey Fishing " + mode.name().toLowerCase() + "..."), false);
 		return 1;
 	}
 }
